@@ -349,7 +349,7 @@ const SortingVisualizer = () => {
                 <input
                   type="range"
                   min="5"
-                  max="150"
+                  max="200"
                   value={arraySize}
                   onChange={(e) => setArraySize(Number(e.target.value))}
                   disabled={sorting}
@@ -364,7 +364,7 @@ const SortingVisualizer = () => {
                 <input
                   type="range"
                   min="1"
-                  max="50"
+                  max="80"
                   value={speed}
                   onChange={(e) => setSpeed(Number(e.target.value))}
                   disabled={sorting}
