@@ -230,6 +230,105 @@ const SortingVisualizer = () => {
     setComparing([]);
   };
 
+  const mergeSort = async () => {
+    const arr = [...array];
+    
+    const merge = async (arr, left, mid, right) => {
+      const leftArr = arr.slice(left, mid + 1);
+      const rightArr = arr.slice(mid + 1, right + 1);
+      
+      let i = 0, j = 0, k = left;
+      
+      while (i < leftArr.length && j < rightArr.length) {
+        if (stopSortingRef.current) return;
+        
+        setComparing([left + i, mid + 1 + j]);
+        playNote(200 + (Math.min(leftArr[i], rightArr[j]) / arraySize) * 800);
+        await sleep(getDelay());
+        
+        if (leftArr[i] <= rightArr[j]) {
+          arr[k] = leftArr[i];
+          i++;
+        } else {
+          arr[k] = rightArr[j];
+          j++;
+        }
+        setArray([...arr]);
+        k++;
+      }
+      
+      while (i < leftArr.length) {
+        if (stopSortingRef.current) return;
+        arr[k] = leftArr[i];
+        setArray([...arr]);
+        i++;
+        k++;
+      }
+      
+      while (j < rightArr.length) {
+        if (stopSortingRef.current) return;
+        arr[k] = rightArr[j];
+        setArray([...arr]);
+        j++;
+        k++;
+      }
+    };
+    
+    const mergeSortHelper = async (arr, left, right) => {
+      if (stopSortingRef.current) return;
+      
+      if (left < right) {
+        const mid = Math.floor((left + right) / 2);
+        await mergeSortHelper(arr, left, mid);
+        await mergeSortHelper(arr, mid + 1, right);
+        await merge(arr, left, mid, right);
+      }
+    };
+    
+    await mergeSortHelper(arr, 0, arr.length - 1);
+    setComparing([]);
+  };
+
+  const radixSort = async () => {
+    const arr = [...array];
+    const max = Math.max(...arr);
+    
+    for (let exp = 1; Math.floor(max / exp) > 0; exp *= 10) {
+      if (stopSortingRef.current) return;
+      
+      const buckets = Array.from({ length: 10 }, () => []);
+      
+      // Distribute elements into buckets
+      for (let i = 0; i < arr.length; i++) {
+        if (stopSortingRef.current) return;
+        
+        const digit = Math.floor(arr[i] / exp) % 10;
+        setComparing([i]);
+        playNote(200 + (arr[i] / arraySize) * 800);
+        await sleep(getDelay());
+        
+        buckets[digit].push(arr[i]);
+      }
+      
+      // Collect elements from buckets back into array
+      let index = 0;
+      for (let i = 0; i < 10; i++) {
+        for (let j = 0; j < buckets[i].length; j++) {
+          if (stopSortingRef.current) return;
+          
+          arr[index] = buckets[i][j];
+          setComparing([index]);
+          playNote(200 + (arr[index] / arraySize) * 800);
+          setArray([...arr]);
+          await sleep(getDelay());
+          index++;
+        }
+      }
+    }
+    
+    setComparing([]);
+  };
+
   const celebrationAnimation = async () => {
     setSorted([]); // Clear any sorted bars from during the sort
     for (let i = 0; i < array.length; i++) {
@@ -256,6 +355,10 @@ const SortingVisualizer = () => {
       await insertionSort();
     } else if (algorithm === 'bogo') {
       await bogoSort();
+    } else if (algorithm === 'merge') {
+      await mergeSort();
+    } else if (algorithm === 'radix') {
+      await radixSort();
     }
     
     if (!stopSortingRef.current) {
@@ -319,11 +422,13 @@ const SortingVisualizer = () => {
             <div className="backdrop-blur-xl bg-white/5 rounded-2xl p-6 mb-8 border border-white/10 space-y-6">
             <div>
               <label className="block text-white font-semibold mb-3">Algorithm</label>
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 {[
                   { value: 'bubble', label: 'Bubble Sort' },
                   { value: 'quick', label: 'Quick Sort' },
                   { value: 'insertion', label: 'Insertion Sort' },
+                  { value: 'merge', label: 'Merge Sort' },
+                  { value: 'radix', label: 'Radix Sort' },
                   { value: 'bogo', label: 'Bogo Sort' }
                 ].map(({ value, label }) => (
                   <button
