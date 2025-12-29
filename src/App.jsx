@@ -513,6 +513,7 @@ const SortingVisualizer = () => {
 
         <div className="mt-6 text-center text-gray-400 text-sm">
           <p>🎵 Audio feedback enabled • 🎨 {arraySize} bars • ⚡ {speed}x speed</p>
+          <p>View app source here: <a href="https://github.com/arc360alt/sorting-app">Source Code</a></p>
         </div>
       </div>
     </div>
