@@ -335,7 +335,7 @@ const SortingVisualizer = () => {
       if (stopSortingRef.current) return;
       setSorted([i]); // Only highlight the current bar
       playNote(400 + (i / array.length) * 600);
-      await sleep(30);
+      await sleep(10);
     }
     // At the very end, mark all as sorted
     setSorted(Array.from({ length: array.length }, (_, i) => i));
@@ -375,7 +375,7 @@ const SortingVisualizer = () => {
           <h1 className="text-5xl font-bold text-white mb-2 text-center bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
             Sorting Visualizer
           </h1>
-          <p className="text-gray-400 text-center mb-8">Random app ive made becuase I am board</p>
+          <p className="text-gray-400 text-center mb-8">Random app Ive made becuase I'm board</p>
           
           <div className="flex flex-wrap gap-4 justify-center items-center mb-8">
             <button
@@ -490,7 +490,8 @@ const SortingVisualizer = () => {
               return (
                 <div
                   key={idx}
-                  className="transition-all duration-75 rounded-t-lg"
+                  // className="transition-all duration-75 rounded-t-lg"
+                  className="rounded-t-lg"
                   style={{
                     height: `${height}px`,
                     width: `${Math.max(100 / arraySize, 2)}%`,
