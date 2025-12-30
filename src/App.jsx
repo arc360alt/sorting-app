@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Play, RotateCcw, Settings } from 'lucide-react';
 
 const SortingVisualizer = () => {
+  const [timer, setTimer] = useState(0);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const timerIntervalRef = useRef(null);
   const [array, setArray] = useState([]);
   const [arraySize, setArraySize] = useState(() => {
     const saved = localStorage.getItem('sortingArraySize');
@@ -43,6 +46,24 @@ const SortingVisualizer = () => {
     localStorage.setItem('sortingSpeed', speed.toString());
   }, [speed]);
 
+  useEffect(() => {
+    if (isTimerRunning) {
+      timerIntervalRef.current = setInterval(() => {
+        setTimer(prev => prev + 10);
+      }, 10);
+    } else {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+      }
+    }
+    
+    return () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+      }
+    };
+  }, [isTimerRunning]);
+
   const generateArray = () => {
     const newArray = [];
     for (let i = 0; i < arraySize; i++) {
@@ -56,6 +77,8 @@ const SortingVisualizer = () => {
     setArray(newArray);
     setComparing([]);
     setSorted([]);
+    setTimer(0);
+    setIsTimerRunning(false);
   };
 
   const playNote = (frequency) => {
@@ -83,6 +106,7 @@ const SortingVisualizer = () => {
     stopSortingRef.current = true;
     setSorting(false);
     setComparing([]);
+    setIsTimerRunning(false);
   };
 
   const getDelay = () => {
@@ -230,6 +254,55 @@ const SortingVisualizer = () => {
     setComparing([]);
   };
 
+  const betterBogoSort = async () => {
+    const arr = [...array];
+    const n = arr.length;
+    let fixedCount = 0;
+    
+    const shuffleUnfixed = async (array, fixedCount) => {
+      const newArr = [...array];
+      // Only shuffle elements after the fixed ones
+      for (let i = newArr.length - 1; i > fixedCount; i--) {
+        if (stopSortingRef.current) return newArr;
+        
+        const j = Math.floor(Math.random() * (i - fixedCount + 1)) + fixedCount;
+        setComparing([i, j]);
+        playNote(200 + (newArr[i] / arraySize) * 800);
+        await sleep(getDelay() / 50); // add a custom delay for bogo so it goes faster
+        
+        [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+      }
+      return newArr;
+    };
+    
+    let shuffledArr = arr;
+    let attempts = 0;
+    
+    while (fixedCount < n) {
+      if (stopSortingRef.current) return;
+      
+      // Check if the element at fixedCount position is correct
+      if (shuffledArr[fixedCount] === fixedCount + 1) {
+        setSorted(prev => [...prev, fixedCount]);
+        fixedCount++;
+      } else {
+        shuffledArr = await shuffleUnfixed(shuffledArr, fixedCount);
+        setArray([...shuffledArr]);
+      }
+      
+      attempts++;
+      
+      // Safety check
+      if (attempts > 50000) {
+        alert('Better Bogo Sort is taking too long! Try a smaller array size.');
+        stopSort();
+        return;
+      }
+    }
+    
+    setComparing([]);
+  };
+
   const mergeSort = async () => {
     const arr = [...array];
     
@@ -346,6 +419,8 @@ const SortingVisualizer = () => {
     setSorted([]);
     setComparing([]);
     stopSortingRef.current = false;
+    setTimer(0);
+    setIsTimerRunning(true);
     
     if (algorithm === 'bubble') {
       await bubbleSort();
@@ -359,7 +434,11 @@ const SortingVisualizer = () => {
       await mergeSort();
     } else if (algorithm === 'radix') {
       await radixSort();
+    } else if (algorithm === 'betterbogo') {
+      await betterBogoSort();
     }
+    
+    setIsTimerRunning(false);
     
     if (!stopSortingRef.current) {
       await celebrationAnimation();
@@ -417,7 +496,14 @@ const SortingVisualizer = () => {
               Settings
             </button>
           </div>
-
+          <div className="text-center">
+            <div className="inline-block backdrop-blur-xl bg-white/10 rounded-2xl px-8 py-4 border border-white/20">
+              <div className="text-gray-400 text-sm mb-0">Time Elapsed</div>
+              <div className="text-1xl font-bold text-white font-mono">
+                {(timer / 1000).toFixed(2)}s
+              </div>
+            </div>
+          </div>
           {showSettings && (
             <div className="backdrop-blur-xl bg-white/5 rounded-2xl p-6 mb-8 border border-white/10 space-y-6">
             <div>
@@ -429,7 +515,8 @@ const SortingVisualizer = () => {
                   { value: 'insertion', label: 'Insertion Sort' },
                   { value: 'merge', label: 'Merge Sort' },
                   { value: 'radix', label: 'Radix Sort' },
-                  { value: 'bogo', label: 'Bogo Sort' }
+                  { value: 'bogo', label: 'Bogo Sort' },
+                  { value: 'betterbogo', label: 'Better Bogo' }
                 ].map(({ value, label }) => (
                   <button
                     key={value}
