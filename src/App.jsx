@@ -455,7 +455,7 @@ const SortingVisualizer = () => {
             Sorting Visualizer
           </h1>
           <p className="text-gray-400 text-center mb-8">Random app Ive made becuase I'm board</p>
-          
+
           <div className="flex flex-wrap gap-4 justify-center items-center mb-8">
             <button
               onClick={startSort}
@@ -496,7 +496,7 @@ const SortingVisualizer = () => {
               Settings
             </button>
           </div>
-          <div className="text-center">
+          <div className="text-center mb-4">
             <div className="inline-block backdrop-blur-xl bg-white/10 rounded-2xl px-8 py-4 border border-white/20">
               <div className="text-gray-400 text-sm mb-0">Time Elapsed</div>
               <div className="text-1xl font-bold text-white font-mono">
